@@ -1,75 +1,98 @@
-# React + TypeScript + Vite
+# Client (Frontend)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19 + TypeScript single-page app for the Pinterest clone UI.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React 19 + TypeScript + Vite 7
+- TailwindCSS 4
+- TanStack Query for server state
+- React Router 7
+- Axios for HTTP requests
+- Socket.IO client for real-time chat/notifications
+- Zustand for local app state
 
-## React Compiler
+## Setup
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
-
-Note: This will impact Vite dev & build performances.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Create `.env` in `client/`:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```env
+VITE_API_BASE_URL=http://localhost:3000
+VITE_IK_IMAGEKIT_URL=https://ik.imagekit.io/your_imagekit_id
+VITE_API_IK_URL_ENDPOINT=https://ik.imagekit.io/your_imagekit_id
+VITE_GIPHY_SDK_KEY=your_giphy_api_key
 ```
+
+## Scripts
+
+- `pnpm dev` - start Vite development server
+- `pnpm build` - type-check and production build
+- `pnpm preview` - preview built app
+- `pnpm start` - alias to `vite preview`
+- `pnpm lint` - run ESLint
+
+## Frontend Architecture
+
+```text
+src/
+├─ api/            # axios instance + endpoint modules
+├─ components/     # reusable and feature components
+├─ hooks/          # custom hooks + query/mutation hooks
+├─ lib/            # local stores/utilities
+├─ routes/         # route pages + layouts
+├─ types/          # domain + api + store type definitions
+└─ assets/
+```
+
+### Routing
+
+Main routes are declared in `src/main.tsx`:
+
+- `/` - home feed
+- `/create` - pin creation
+- `/pin/:id` - pin detail page
+- `/user/:id` - profile page
+- `/user/edit/:id` - profile editing
+- `/auth` - login/register
+
+### Data Layer
+
+- Central Axios client in `src/api/axios.ts`
+- `withCredentials: true` for cookie auth
+- Adds `X-Request-ID` header per request
+- Response interceptor unwraps `.data`
+- API modules grouped by resource in `src/api/endpoints/`
+
+### State Management
+
+- **Server state:** TanStack Query hooks
+- **Client state:** Zustand stores (`authStore`, `socketStore`, `drawerStore`, `editorStore`)
+
+### Real-Time
+
+- Socket connection established in `src/routes/layouts/MainLayout.tsx`
+- Uses backend URL from `VITE_API_BASE_URL`
+- Supports conversation updates and notifications
+
+## UI and Media
+
+- TailwindCSS utility styling
+- shadcn/ui style components in `src/components/ui/`
+- Image rendering through ImageKit via `src/components/image/Image.tsx`
+- Sticker picker integration via GIPHY SDK key
+
+## Development Notes
+
+- Uses `@/` alias for `src/`
+- React Compiler Babel plugin is enabled
+- Auth user state is persisted in browser storage via Zustand middleware
+- Backend must allow frontend origin with credentials (`CLIENT_URL` on backend)
+
+## Related Docs
+
+- Project overview: [`../README.md`](../README.md)
+- API/server details: [`../backend/README.md`](../backend/README.md)
